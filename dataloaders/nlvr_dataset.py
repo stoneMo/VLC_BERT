@@ -34,7 +34,7 @@ from pytorch_pretrained_bert.fine_tuning import _truncate_seq_pair, random_word
 from dataloaders.bert_field import IntArrayField
 import numpy as np
 from allennlp.data.fields import ListField
-from visualbert.pytorch_pretrained_bert.tokenization import BertTokenizer
+from VQATR.pytorch_pretrained_bert.tokenization import BertTokenizer
 
 from .bert_data_utils import *
 
