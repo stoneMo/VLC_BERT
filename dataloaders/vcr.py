@@ -30,8 +30,8 @@ from .bert_data_utils import InputExample, InputFeatures, get_one_image_feature_
 
 from .bert_field import IntArrayField
 
-from visualbert.pytorch_pretrained_bert.fine_tuning import _truncate_seq_pair, random_word
-from visualbert.pytorch_pretrained_bert.tokenization import BertTokenizer
+from VQATR.pytorch_pretrained_bert.fine_tuning import _truncate_seq_pair, random_word
+from VQATR.pytorch_pretrained_bert.tokenization import BertTokenizer
 
 GENDER_NEUTRAL_NAMES = ['Casey', 'Riley', 'Jessie', 'Jackie', 'Avery', 'Jaime', 'Peyton', 'Kerry', 'Jody', 'Kendall',
                         'Peyton', 'Skyler', 'Frankie', 'Pat', 'Quinn']
