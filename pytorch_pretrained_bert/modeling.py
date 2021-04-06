@@ -665,7 +665,7 @@ class BertModel(PreTrainedBertModel):
         # positions we want to attend and -10000.0 for masked positions.
         # Since we are adding it to the raw scores before the softmax, this is
         # effectively the same as removing these entirely.
-        extended_attention_mask = extended_attention_mask.to(dtype=next(self.parameters()).dtype) # fp16 compatibility
+        extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
         embedding_output = self.embeddings(input_ids, token_type_ids)
@@ -1227,11 +1227,11 @@ class BertEmbeddingsWithVisualEmbedding(nn.Module):
                 image_text_alignment = image_text_alignment_mask * image_text_alignment
 
                 # position_embeddings_visual = Batch x image_length x alignment length x dim
-                position_embeddings_visual = self.position_embeddings(image_text_alignment) * image_text_alignment_mask.to(dtype=next(self.parameters()).dtype).unsqueeze(-1)
+                position_embeddings_visual = self.position_embeddings(image_text_alignment) * image_text_alignment_mask.to(dtype=torch.float32).unsqueeze(-1)
                 position_embeddings_visual = position_embeddings_visual.sum(2)
 
                 # We want to averge along the alignment_number dimension.
-                image_text_alignment_mask = image_text_alignment_mask.to(dtype=next(self.parameters()).dtype).sum(2)
+                image_text_alignment_mask = image_text_alignment_mask.to(dtype=torch.float32).sum(2)
                 image_text_alignment_mask[image_text_alignment_mask==0] = 1 # Avoid devide by zero error
                 position_embeddings_visual = position_embeddings_visual / image_text_alignment_mask.unsqueeze(-1)
 
@@ -1290,7 +1290,7 @@ class BertVisualModel(PreTrainedBertModel):
         # positions we want to attend and -10000.0 for masked positions.
         # Since we are adding it to the raw scores before the softmax, this is
         # effectively the same as removing these entirely.
-        extended_attention_mask = extended_attention_mask.to(dtype=next(self.parameters()).dtype) # fp16 compatibility
+        extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
         embedding_output = self.embeddings(input_ids, token_type_ids, visual_embeddings = visual_embeddings, position_embeddings_visual = position_embeddings_visual, visual_embeddings_type = visual_embeddings_type, image_text_alignment = image_text_alignment,
@@ -1622,7 +1622,7 @@ class FlickrAttention(nn.Module):
         return x.permute(0, 2, 1, 3)
 
     def forward(self, query, key, attention_mask):
-        attention_mask = attention_mask.to(dtype=next(self.parameters()).dtype)
+        attention_mask = attention_mask.to(dtype=torch.float32)
         attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
         attention_mask = (1.0 - attention_mask) * -10000.0
 
