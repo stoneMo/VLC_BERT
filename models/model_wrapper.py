@@ -20,7 +20,7 @@ from allennlp.nn.util import device_mapping
 from utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
     restore_checkpoint, print_para, restore_best_checkpoint, load_state_dict_flexible
 
-from visualbert.pytorch_pretrained_bert.optimization import BertAdam, WarmupLinearSchedule
+from VQATR.pytorch_pretrained_bert.optimization import BertAdam, WarmupLinearSchedule
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
