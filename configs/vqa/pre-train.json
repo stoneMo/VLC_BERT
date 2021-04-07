@@ -1,7 +1,7 @@
 {
   "dataset": "vqa",
 
-  "data_root": "X_COCO", //Please replace this with the actual corresponding folder
+  "data_root": "/data1/moshentong/ObjectDetection/VisualBERT/VQATR/X_COCO", //Please replace this with the actual corresponding folder
   "use_visual_genome": true,
 
   "max_seq_length": 128,
