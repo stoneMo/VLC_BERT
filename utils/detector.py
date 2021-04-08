@@ -68,9 +68,9 @@ class SimpleDetector(nn.Module):
             # backbone.l ayer4
         )
 
-        from torchvision.layers import ROIAlign
-        # from torchvision.ops import RoIAlign
-        self.roi_align = ROIAlign((7, 7) if USE_IMAGENET_PRETRAINED else (14, 14),
+        # from torchvision.layers import ROIAlign
+        from torchvision.ops import RoIAlign
+        self.roi_align = RoIAlign((7, 7) if USE_IMAGENET_PRETRAINED else (14, 14),
                                   spatial_scale=1 / 16, sampling_ratio=0)
 
         if semantic:
