@@ -284,6 +284,7 @@ for epoch_num in range(start_epoch, stop_epoch):
 
         # for vqa, nlvr, flickr
         do_test = args.get("do_test", False) ## This one is for vqa
+        print("do_test:", do_test)
         if do_test:
             val_loader = test_loader
             val_dataset = val_loader.dataset
