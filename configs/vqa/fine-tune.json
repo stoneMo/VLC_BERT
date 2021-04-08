@@ -14,7 +14,7 @@
 
   "do_test": false,
   "skip_training":true,
-  "epoch_to_load": null,
+  "epoch_to_load": 9,
 
   "pretraining": false,
   "no_next_sentence": true,
