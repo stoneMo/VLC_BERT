@@ -13,7 +13,7 @@
   "eval_batch_size": 64,
 
   "do_test": false,
-  "skip_training":false,
+  "skip_training":true,
   "epoch_to_load": null,
 
   "pretraining": false,
