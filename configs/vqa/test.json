@@ -12,9 +12,9 @@
   "train_batch_size": 64,
   "eval_batch_size": 64,
 
-  "do_test": false,
-  "skip_training":false,
-  "epoch_to_load": null,
+  "do_test": true,
+  "skip_training":true,
+  "epoch_to_load": 9,
 
   "pretraining": false,
   "no_next_sentence": true,
