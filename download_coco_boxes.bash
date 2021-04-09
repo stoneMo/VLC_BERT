@@ -1,24 +1,24 @@
 #!/bin/bash
 
-# download the vqa_coco_pre_trained
-# https://drive.google.com/file/d/1tgYovjB6MZZlqdSAOPzB8bZqnFezWNBO/view
 
-fileid="1tgYovjB6MZZlqdSAOPzB8bZqnFezWNBO"
-filename="vqa_coco_pre_trained.th"
+# download the boxes & features
+# https://drive.google.com/file/d/1KyLyqTqBsMX7QtLTma0xFrmhAzdQDUed/view
+
+fileid="1KyLyqTqBsMX7QtLTma0xFrmhAzdQDUed"
+filename="trainval2014_resnet101_faster_rcnn_genome.zip"
 curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null
 curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=${fileid}" -o ${filename}
 
 
-# https://drive.google.com/file/d/1kuPr187zWxSJbtCbVW87XzInXltM-i9Y/view
-fileid="1kuPr187zWxSJbtCbVW87XzInXltM-i9Y"
-filename="vqa_pre_trained.th"
+# https://drive.google.com/file/d/10nM3kRz2c827aqwVvLnv430YYFp0po6O/view
+fileid="10nM3kRz2c827aqwVvLnv430YYFp0po6O"
+filename="test2015_resnet101_faster_rcnn_genome.zip"
 curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null
 curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=${fileid}" -o ${filename}
 
 
-# https://drive.google.com/file/d/19FpfLYo3rwv0eybUvfkDMCoivyL4XLqB/view
-fileid="1xamTrLkWrYQJ0ddy2roe2UG1u2jusQZN"
-filename="vqa_fine_tuned.th"
+# https://drive.google.com/file/d/1CPnYcOgIOP5CZkp_KChuCg54_Ljr6-fp/view
+fileid="1CPnYcOgIOP5CZkp_KChuCg54_Ljr6-fp"
+filename="answers_vqa.txt"
 curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null
 curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=${fileid}" -o ${filename}
-
