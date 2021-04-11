@@ -13,7 +13,7 @@
   "special_screen": false,
   "add_all_features": true,
 
-  "fp16": false,
+  "fp16": true,   // false for original 
   "loss_scale": 256, 
 
   "max_seq_length": 128,
