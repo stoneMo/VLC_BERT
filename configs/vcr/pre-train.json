@@ -37,7 +37,7 @@
   "restore_bin": null,  //Specify which model to initialize from
 
   "num_workers": 4,
-  "val_workers": 2,
+  "val_workers": 0,
 
   "model": // Used for AllenNLP registed BERT model
   {
