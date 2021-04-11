@@ -335,11 +335,11 @@ if __name__ == '__main__':
 	ref_ids = refer.getRefIds()
 	print(len(ref_ids))
 
-	print len(refer.Imgs)
-	print len(refer.imgToRefs)
+	print(len(refer.Imgs))
+	print(len(refer.imgToRefs))
 
 	ref_ids = refer.getRefIds(split='train')
-	print 'There are %s training referred objects.' % len(ref_ids)
+	print('There are %s training referred objects.' % len(ref_ids))
 
 	for ref_id in ref_ids:
 		ref = refer.loadRefs(ref_id)[0]
@@ -347,7 +347,7 @@ if __name__ == '__main__':
 			continue
 
 		pprint(ref)
-		print 'The label is %s.' % refer.Cats[ref['category_id']]
+		print('The label is %s.' % refer.Cats[ref['category_id']])
 		plt.figure()
 		refer.showRef(ref, seg_box='box')
 		plt.show()
