@@ -9,9 +9,9 @@ Visual and linguistic pre-training aims to learn vision and language representat
 ## Baselines
 
 Please see the details about those baselines in each branch.
-*ViLBERT 
-*VisualBERT
-*VL-BERT
+1. ViLBERT 
+2. VisualBERT
+3. VL-BERT
 
 
 ## References
