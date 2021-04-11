@@ -9,9 +9,9 @@ Visual and linguistic pre-training aims to learn vision and language representat
 ## Baselines
 
 Please see the details about those baselines in each branch.
-1. ViLBERT <ViLBERT>
-2. VisualBERT <VisualBERT>
-3. VL-BERT <VLBERT>
+1. ViLBERT <https://github.com/stoneMo/VLC-BERT/tree/ViLBERT>
+2. VisualBERT <https://github.com/stoneMo/VLC-BERT/tree/VisualBERT>
+3. VL-BERT <https://github.com/stoneMo/VLC-BERT/tree/VLBERT>
 
 
 ## References
