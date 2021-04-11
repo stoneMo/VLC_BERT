@@ -1,5 +1,4 @@
-# VLC-BERT 
-(11747-project)
+# VLC-BERT (11747-project)
 
 ## Authors 
 Shentong Mo,  Jingfei Xia,  Ihor Markevych
