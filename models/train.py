@@ -20,24 +20,24 @@ from tqdm import tqdm
 from allennlp.nn.util import device_mapping
 
 
-from VQATR.utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
+from VLC_BERT.utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
     restore_checkpoint, print_para, restore_best_checkpoint, restore_checkpoint_flexible, load_state_dict_flexible, compute_score_with_logits
 
-from VQATR.dataloaders.vcr import VCR, VCRLoader
+from VLC_BERT.dataloaders.vcr import VCR, VCRLoader
 try:
-    from VQATR.dataloaders.coco_dataset import COCODataset
+    from VLC_BERT.dataloaders.coco_dataset import COCODataset
 except:
     print("Import COCO dataset failed.")
 try:   
-    from VQATR.dataloaders.nlvr_dataset import NLVRDataset
+    from VLC_BERT.dataloaders.nlvr_dataset import NLVRDataset
 except:
     print("Import NLVR2 dataset failed.")
 try:
-    from VQATR.dataloaders.vqa_dataset import VQADataset
+    from VLC_BERT.dataloaders.vqa_dataset import VQADataset
 except:
     print("Import VQA dataset failed.")
 try:
-    from VQATR.dataloaders.flickr_dataset import Flickr30kFeatureDataset
+    from VLC_BERT.dataloaders.flickr_dataset import Flickr30kFeatureDataset
 except:
     print("Import Flickr30K dataset failed.")
 
@@ -55,8 +55,8 @@ except:
     resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))'''
 
 from allennlp.models import Model
-from VQATR.models.model_wrapper import ModelWrapper
-from VQATR.models import model
+from VLC_BERT.models.model_wrapper import ModelWrapper
+from VLC_BERT.models import model
 
 #################################
 from attrdict import AttrDict
