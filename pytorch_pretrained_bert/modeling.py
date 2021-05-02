@@ -1478,8 +1478,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         if output_all_encoded_layers:
             output_dict["sequence_output"] = sequence_output
             output_dict["pooled_output"] = pooled_output
-            # output_dict["loss"] = None
-            # return output_dict
+            output_dict["loss"] = None
+            return output_dict
 
         
         if self.training_head_type == "pretraining":
