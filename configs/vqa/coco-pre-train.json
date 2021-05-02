@@ -28,7 +28,7 @@
   "patience": 3,
   "learning_rate": 5e-5,
   "num_train_epochs":  10,
-  "warmup_proportion": 0,    // 0.1
+  "warmup_proportion": 0.1,    // 0.1
   "grad_norm": 1.0,
   "gradient_accumulation_steps": 1,
 
