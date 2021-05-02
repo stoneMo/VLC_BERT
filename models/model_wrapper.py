@@ -63,14 +63,18 @@ class ModelWrapper():
 
         self.optimizer.zero_grad()
 
+        print("batch:", batch.keys())
+        print("masked_lm_labels:", batch['masked_lm_labels'].shape)    # [48, 46]
+        print("is_random_next:", batch['is_random_next'].shape)       # [48]
+
         print("==========before model==========")
 
         output_dict = self.model(**batch)
 
         print("output_dict:", output_dict.keys())
 
-        print("sequence_output:", output_dict["sequence_output"].shape)
-        print("pooled_output:", output_dict["pooled_output"].shape)
+        # print("sequence_output:", output_dict["sequence_output"].shape)
+        # print("pooled_output:", output_dict["pooled_output"].shape)
         print("logits:", output_dict["logits"].shape)
         print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)
 
