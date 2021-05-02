@@ -55,7 +55,6 @@ class VisualBERTDetector(Model):
                 bypass_transformer = bypass_transformer,
                 random_initialize = random_initialize,
                 output_attention_weights = output_attention_weights)
-        print("self.bert:", self.bert)
 
         if special_visual_initialize:
             self.bert.bert.embeddings.special_intialize()
@@ -224,6 +223,8 @@ class VisualBERTFixedImageEmbedding(Model):
                 random_initialize = random_initialize,
                 output_attention_weights = output_attention_weights)
         
+        print("self.bert:", self.bert)
+
         if special_visual_initialize:
             self.bert.bert.embeddings.special_intialize()
 
