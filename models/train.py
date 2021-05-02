@@ -235,7 +235,10 @@ for epoch_num in range(start_epoch, stop_epoch):
     train_model.model.train()
     if not args.get("skip_training", False):
         for b, (time_per_batch, batch) in enumerate(time_batch(tqdm(train_loader), reset_every=ARGS_RESET_EVERY)):
+            
 
+            print("batch:", batch.keys())
+            
             batch = _to_gpu(batch)
             
             output_dict = train_model.step(batch)
