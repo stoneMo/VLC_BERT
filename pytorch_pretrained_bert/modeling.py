@@ -1471,6 +1471,10 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
         output_dict = {}
 
+        output_dict["sequence_output"] = sequence_output
+        output_dict["pooled_output"] = pooled_output
+
+
         if output_all_encoded_layers:
             output_dict["sequence_output"] = sequence_output
             output_dict["pooled_output"] = pooled_output
@@ -1479,9 +1483,6 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
         
         if self.training_head_type == "pretraining":
-            
-            output_dict["sequence_output"] = sequence_output
-            output_dict["pooled_output"] = pooled_output
 
             prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
             output_dict["logits"] = prediction_scores
