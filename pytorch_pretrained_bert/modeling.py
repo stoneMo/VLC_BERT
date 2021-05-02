@@ -1468,13 +1468,20 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_dict["seq_relationship_score"] = seq_relationship_score
             output_dict["loss"] = None
 
+
+            print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+            print("seq_relationship_score:", is_random_next.shape)
+
             if flat_masked_lm_labels is not None and is_random_next is not None:
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
+
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
                 output_dict["loss"] = masked_lm_loss + next_sentence_loss
+
+                
             
             if flat_masked_lm_labels is not None and is_random_next is None:
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
