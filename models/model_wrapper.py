@@ -75,8 +75,9 @@ class ModelWrapper():
 
         # print("sequence_output:", output_dict["sequence_output"].shape)
         # print("pooled_output:", output_dict["pooled_output"].shape)
-        print("logits:", output_dict["logits"].shape)
-        print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)
+        print("logits:", output_dict["logits"].shape)                      # [48, 141, 30522]
+        print("logits:", output_dict["logits"][0,:,:2)                      # [48, 141, 30522]
+        print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)   # [48, 2]
 
         print("==========after model==========")
 
