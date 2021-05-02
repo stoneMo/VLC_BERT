@@ -1454,6 +1454,10 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             confidence = flat_confidence,
             output_all_encoded_layers=output_all_encoded_layers)
 
+
+        print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+        print("is_random_next:", is_random_next.shape)
+        
         output_dict = {}
 
         if output_all_encoded_layers:

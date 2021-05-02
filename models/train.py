@@ -238,8 +238,8 @@ for epoch_num in range(start_epoch, stop_epoch):
             
 
             print("batch:", batch.keys())
-            print("masked_lm_labels:", batch['masked_lm_labels'].shape)
-            print("is_random_next:", batch['is_random_next'].shape)
+            print("masked_lm_labels:", batch['masked_lm_labels'].shape)    # [48, 46]
+            print("is_random_next:", batch['is_random_next'].shape)       # [48]
 
             batch = _to_gpu(batch)
             
