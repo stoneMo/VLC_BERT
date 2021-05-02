@@ -1469,10 +1469,6 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             confidence = flat_confidence,
             output_all_encoded_layers=output_all_encoded_layers)
 
-
-        print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
-        print("is_random_next:", is_random_next.shape)
-
         output_dict = {}
 
         if output_all_encoded_layers:
@@ -1483,6 +1479,10 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
         
         if self.training_head_type == "pretraining":
+            
+            output_dict["sequence_output"] = sequence_output
+            output_dict["pooled_output"] = pooled_output
+
             prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
             output_dict["logits"] = prediction_scores
             output_dict["seq_relationship_score"] = seq_relationship_score
@@ -1490,18 +1490,12 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
             if flat_masked_lm_labels is not None and is_random_next is not None:
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
-                
-                # print("first")
-                # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
-                # print("is_random_next:", is_random_next.shape)
 
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
-                output_dict["loss"] = masked_lm_loss + next_sentence_loss
-
-                
+                output_dict["loss"] = masked_lm_loss + next_sentence_loss                
             
             if flat_masked_lm_labels is not None and is_random_next is None:
 
