@@ -1476,6 +1476,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
 
         if output_all_encoded_layers:
+            output_dict["sequence_output"] = sequence_output
+            output_dict["pooled_output"] = pooled_output
             output_dict["loss"] = None
             return output_dict
 
@@ -1623,11 +1625,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 output_dict["accuracy"] = acc / entities_num
                 output_dict["upperbound_accuracy"] = upper_acc / entities_num
                 output_dict["entity_num"] = entities_num
-
-            output_dict["sequence_output"] = sequence_output
-            output_dict["pooled_output"] = pooled_output
-
-            return output_dict
+            return output_dict, sequence_output, pooled_output
 
 
 
