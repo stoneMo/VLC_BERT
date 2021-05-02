@@ -67,6 +67,8 @@ class ModelWrapper():
 
         output_dict = self.model(**batch)
 
+        print("output_dict:", output_dict.keys())
+
         print("==========after model==========")
 
         loss = output_dict['loss']
