@@ -63,9 +63,11 @@ class ModelWrapper():
 
         self.optimizer.zero_grad()
 
-        print("==========step==========")
+        print("==========before model==========")
 
         output_dict = self.model(**batch)
+
+        print("==========after model==========")
 
         loss = output_dict['loss']
 
