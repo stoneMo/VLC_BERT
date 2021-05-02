@@ -1513,7 +1513,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 output_dict["masked_lm_loss"] = masked_lm_loss
                 output_dict["loss"] = masked_lm_loss
 
-            return output_dict, sequence_output, pooled_output 
+            return output_dict
 
         elif self.training_head_type == "multichoice":
             pooled_output = self.dropout(pooled_output)
