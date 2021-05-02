@@ -69,6 +69,11 @@ class ModelWrapper():
 
         print("output_dict:", output_dict.keys())
 
+        print("sequence_output:", output_dict["sequence_output"].shape)
+        print("pooled_output:", output_dict["pooled_output"].shape)
+        print("logits:", output_dict["logits"].shape)
+        print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)
+
         print("==========after model==========")
 
         loss = output_dict['loss']
