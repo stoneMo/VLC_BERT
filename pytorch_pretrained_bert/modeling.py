@@ -740,6 +740,9 @@ class BertForPreTraining(PreTrainedBertModel):
                                                    output_all_encoded_layers=False)
         prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
 
+        print("masked_lm_labels:", masked_lm_labels.shape)
+        print("next_sentence_label:", next_sentence_label.shape)
+
         if masked_lm_labels is not None and next_sentence_label is not None:
             loss_fct = CrossEntropyLoss(ignore_index=-1)
             masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), masked_lm_labels.view(-1))
@@ -1370,9 +1373,9 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             self.flickr_attention = FlickrAttention(config)
         self.apply(self.init_bert_weights)
 
-        print("Training Obejctive")
-        print("self.bert:", self.bert)
-        print("self.cls:", self.cls)
+        # print("Training Obejctive")
+        # print("self.bert:", self.bert)
+        # print("self.cls:", self.cls)
 
 
     def forward(
@@ -1460,8 +1463,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_all_encoded_layers=output_all_encoded_layers)
 
 
-        print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
-        print("is_random_next:", is_random_next.shape)
+        # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+        # print("is_random_next:", is_random_next.shape)
 
         output_dict = {}
 
@@ -1481,9 +1484,9 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             if flat_masked_lm_labels is not None and is_random_next is not None:
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
                 
-                print("first")
-                print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
-                print("is_random_next:", is_random_next.shape)
+                # print("first")
+                # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+                # print("is_random_next:", is_random_next.shape)
 
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
@@ -1496,9 +1499,9 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             if flat_masked_lm_labels is not None and is_random_next is None:
 
 
-                print("second")
-                print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
-                print("is_random_next:", is_random_next.shape)
+                # print("second")
+                # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+                # print("is_random_next:", is_random_next.shape)
 
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
