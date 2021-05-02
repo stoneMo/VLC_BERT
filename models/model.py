@@ -273,7 +273,7 @@ class VisualBERTFixedImageEmbedding(Model):
         else:
             image_mask = None
 
-        output_dict = self.bert(
+        output_dict, sequence_output, pooled_output = self.bert(
             input_ids = bert_input_ids, 
             token_type_ids = bert_input_type_ids, 
             input_mask = bert_input_mask, 
