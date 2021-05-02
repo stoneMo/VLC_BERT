@@ -546,6 +546,8 @@ class PreTrainedBertModel(nn.Module):
         # Instantiate model.
         model = cls(config, *inputs, **kwargs)
 
+        print("model:", model)
+
         if random_initialize:
             return model
 
@@ -1468,8 +1470,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_all_encoded_layers=output_all_encoded_layers)
 
 
-        # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
-        # print("is_random_next:", is_random_next.shape)
+        print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+        print("is_random_next:", is_random_next.shape)
 
         output_dict = {}
 
