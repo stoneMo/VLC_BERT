@@ -75,10 +75,10 @@ class ModelWrapper():
 
         print("output_dict:", output_dict.keys())
 
-        print("sequence_output:", len(output_dict["sequence_output"]))     # [48, 768]
-        print("sequence_output:", output_dict["sequence_output"][0].shape)     # [48, 768]
-
-        print("pooled_output:", output_dict["pooled_output"].shape)         # [48, 2048]
+        print("sequence_output:", len(output_dict["sequence_output"]))     # 12 * 4 
+        print("sequence_output:", output_dict["sequence_output"][0].shape)     # [48, 134, 768]
+        print("pooled_output:", output_dict["pooled_output"].shape)         # [48, 768]
+        
         print("logits:", output_dict["logits"].shape)                      # [48, 141, 30522]
         print("logits:", output_dict["logits"][0,:,:2])                     # [48, 141, 30522]
         print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)   # [48, 2]
