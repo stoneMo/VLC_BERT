@@ -738,7 +738,12 @@ class BertForPreTraining(PreTrainedBertModel):
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, masked_lm_labels=None, next_sentence_label=None):
         sequence_output, pooled_output = self.bert(input_ids, token_type_ids, attention_mask,
                                                    output_all_encoded_layers=False)
+
+        print("sequence_output:", sequence_output.shape)
+        print("pooled_output:", pooled_output.shape)
+
         prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
+
 
         print("masked_lm_labels:", masked_lm_labels.shape)
         print("next_sentence_label:", next_sentence_label.shape)
