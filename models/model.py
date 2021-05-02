@@ -258,7 +258,7 @@ class VisualBERTFixedImageEmbedding(Model):
                 masked_lm_labels = None,
                 is_random_next = None,
 
-                output_all_encoded_layers = False
+                output_all_encoded_layers = True
                 ) -> Dict[str, torch.Tensor]:
 
         # image_feat_variable = batch x ( num_choice x ) image_feature_length x dim
@@ -273,7 +273,7 @@ class VisualBERTFixedImageEmbedding(Model):
         else:
             image_mask = None
 
-        output_dict, sequence_output, pooled_output = self.bert(
+        output_dict = self.bert(
             input_ids = bert_input_ids, 
             token_type_ids = bert_input_type_ids, 
             input_mask = bert_input_mask, 
