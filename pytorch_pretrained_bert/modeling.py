@@ -1370,6 +1370,11 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             self.flickr_attention = FlickrAttention(config)
         self.apply(self.init_bert_weights)
 
+        print("Training Obejctive")
+        print("self.bert:", self.bert)
+        print("self.cls:", self.cls)
+
+
     def forward(
         self, 
         input_ids, 
@@ -1457,7 +1462,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
         print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
         print("is_random_next:", is_random_next.shape)
-        
+
         output_dict = {}
 
         if output_all_encoded_layers:
