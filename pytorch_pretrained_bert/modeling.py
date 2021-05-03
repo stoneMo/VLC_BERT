@@ -1532,12 +1532,15 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
             if flat_masked_lm_labels is not None and is_random_next is not None:
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
-                output_dict["sequence_output"] = sequence_output
-                output_dict["pooled_output"] = pooled_output
+                # output_dict["sequence_output"] = sequence_output
+                # output_dict["pooled_output"] = pooled_output
+
+                print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 # (B*154, 30522)
                 # (B*54)
                 
+                print("is_random_next:", is_random_next.shape)
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
