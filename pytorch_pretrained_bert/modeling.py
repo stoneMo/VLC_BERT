@@ -1537,8 +1537,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
-                # TODO: contrastive loss between text embedding and image embedding
 
+                # TODO: contrastive loss between text embedding and image embedding
                 logits_per_image, logits_per_text = self.vlc(text, sequence_output, pooled_output)
                 loss_vlc = CrossEntropyLoss()
 
