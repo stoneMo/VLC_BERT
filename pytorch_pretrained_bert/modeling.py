@@ -1570,6 +1570,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 loss_image = loss_vlc(logits_per_image, vlc_labels)
                 loss_text = loss_vlc(logits_per_text, vlc_labels)
                 vlc_loss = (loss_image + loss_text)/2
+                
+                output_dict["vlc_loss"] = vlc_loss
 
                 output_dict["loss"] = masked_lm_loss + next_sentence_loss  + vlc_loss
             
