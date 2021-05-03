@@ -1491,6 +1491,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         print("flat_token_type_ids[0]:", flat_token_type_ids[0])  # [12, 64]
 
         print("flat_attention_mask:", flat_attention_mask.shape)  # [12, 164]
+        print("flat_attention_mask:", flat_attention_mask[0])  # [12, 164]
 
         print("flat_visual_embeddings:", flat_visual_embeddings.shape)   # [12, 100, 2048]
         # print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)  # Nonetype
@@ -1541,8 +1542,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
 
-                print("sequence_output:", sequence_output.shape)
-                print("pooled_output:", pooled_output.shape)
+                print("sequence_output:", sequence_output.shape)    # [12, 140, 768]
+                print("pooled_output:", pooled_output.shape)     # [12, 768]
 
                 # TODO: contrastive loss between text embedding and image embedding
                 logits_per_image, logits_per_text = self.vlc(text, sequence_output, pooled_output)
