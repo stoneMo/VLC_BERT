@@ -1557,7 +1557,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 print("pooled_output:", pooled_output.shape)     # [12, 768]
 
                 # TODO: contrastive loss between text embedding and image embedding
-                logits_per_image, logits_per_text = self.vlc(text, sequence_output, pooled_output)
+                logits_per_image, logits_per_text = self.vlc(flat_input_ids, sequence_output, pooled_output)
                 loss_vlc = CrossEntropyLoss()
 
                 # symmetric loss function
