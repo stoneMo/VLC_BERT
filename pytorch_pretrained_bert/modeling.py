@@ -457,15 +457,20 @@ class VLCPreTrainingHeads(nn.Module):
     def __init__(self, hidden_dim, embed_dim=768):
         super(VLCPreTrainingHeads, self).__init__()
         self.text_projection = nn.Parameter(torch.empty(hidden_dim, embed_dim))
+        self.image_projection = nn.Parameter(torch.empty(hidden_dim, embed_dim))
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
 
     def forward(self, text, sequence_output, pooled_output):
         
-        image_features = pooled_output   # [batch_size, embed_dim]
-
+        batch_size = text.size(0)
+        text_length = text.size(1)
+        text_features = sequence_output[:,:text_length]
+        image_features = sequence_output[:,text_length:]   # [batch_size, embed_dim]
         # sequence_output.shape = [batch_size, sequence_length, hidden_dim]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        text_features = sequence_output[torch.arange(sequence_output.shape[0]), text.argmax(dim=-1)] @ self.text_projection
+        text_features = torch.max(text_features,dim=1)[0] @ self.text_projection
+        image_features = torch.max(image_features,dim=1)[0] @ self.image_projection
+
         # normalized features
         image_features = image_features / image_features.norm(dim=-1, keepdim=True)
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
@@ -1360,7 +1365,6 @@ class BertVisualModel(PreTrainedBertModel):
                 encoded_layers = encoded_layers[-1]
             return encoded_layers, pooled_output, attn_data_list
         else:
-            print("embedding_output:", embedding_output.shape)
             encoded_layers = self.encoder(embedding_output,
                                           extended_attention_mask,
                                           output_all_encoded_layers=output_all_encoded_layers)
@@ -1542,7 +1546,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 # (B*154, 30522)
-                # (B*54)
+                # (B*154)
 
                 print("is_random_next:", is_random_next.shape)
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
