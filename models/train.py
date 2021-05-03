@@ -246,6 +246,7 @@ for epoch_num in range(start_epoch, stop_epoch):
                                             'crl': output_dict.get("cnn_regularization_loss", 0.0),
                                             'next_sentence_loss': output_dict["next_sentence_loss"].mean().item() if "next_sentence_loss" in output_dict else 0.0,
                                             'masked_lm_loss': output_dict["masked_lm_loss"].mean().item() if "masked_lm_loss" in output_dict else 0.0,
+                                            'vlc_loss': output_dict["vlc_loss"].mean().item() if "vlc_loss" in output_dict else 0.0,
                                             'accuracy': (train_model.model.module).get_metrics(
                                                 reset=(b % ARGS_RESET_EVERY) == 0)[
                                                 'accuracy'],
