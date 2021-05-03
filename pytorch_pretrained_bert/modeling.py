@@ -29,6 +29,7 @@ import logging
 import tarfile
 import tempfile
 import shutil
+import numpy as np
 
 import torch
 from torch import nn
@@ -452,7 +453,30 @@ class BertPreTrainingHeads(nn.Module):
         return prediction_scores, seq_relationship_score
 
 
+class VLCPreTrainingHeads(nn.Module):
+    def __init__(self, hidden_dim, embed_dim=768):
+        super(VLCPreTrainingHeads, self).__init__()
+        self.text_projection = nn.Parameter(torch.empty(hidden_dim, embed_dim))
+        self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
 
+    def forward(self, text, sequence_output, pooled_output):
+        
+        image_features = pooled_output   # [batch_size, embed_dim]
+
+        # sequence_output.shape = [batch_size, sequence_length, hidden_dim]
+        # take features from the eot embedding (eot_token is the highest number in each sequence)
+        text_features = sequence_output[torch.arange(sequence_output.shape[0]), text.argmax(dim=-1)] @ self.text_projection
+        # normalized features
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+
+        # cosine similarity as logits
+        logit_scale = self.logit_scale.exp()
+        logits_per_image = logit_scale * image_features @ text_features.t()
+        logits_per_text = logit_scale * text_features @ image_features.t()
+
+        # shape = [global_batch_size, global_batch_size]
+        return logits_per_image, logits_per_text
 
 
 class PreTrainedBertModel(nn.Module):
@@ -1361,6 +1385,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         self.training_head_type = training_head_type
         if self.training_head_type == "pretraining":
             self.cls = BertPreTrainingHeads(config, self.bert.embeddings.word_embeddings.weight)
+            self.vlc = VLCPreTrainingHeads(hidden_dim=768, embed_dim=768)
+
         elif self.training_head_type == "multichoice":
             self.dropout = nn.Dropout(config.hidden_dropout_prob)
             self.classifier = nn.Linear(config.hidden_size, 1)
@@ -1458,6 +1484,17 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_dict['loss'] = None
             return output_dict
 
+        print("====================")
+        print("flat_input_ids:", flat_input_ids.shape)
+        print("flat_token_type_ids:", flat_token_type_ids.shape)
+        print("flat_attention_mask:", flat_attention_mask.shape)
+
+        print("flat_visual_embeddings:", flat_visual_embeddings.shape)
+        print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)
+        print("visual_embeddings_type:", visual_embeddings_type.shape)
+
+        print("flat_image_text_alignment:", flat_image_text_alignment.shape)
+
         sequence_output, pooled_output = self.bert(
             flat_input_ids, 
             flat_token_type_ids, 
@@ -1500,7 +1537,19 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
-                output_dict["loss"] = masked_lm_loss + next_sentence_loss                
+                # TODO: contrastive loss between text embedding and image embedding
+
+                logits_per_image, logits_per_text = self.vlc(text, sequence_output, pooled_output)
+                loss_vlc = CrossEntropyLoss()
+
+                # symmetric loss function
+                batch_size = logits_per_image.size(0)
+                vlc_labels = torch.arange(batch_size)
+                loss_image = loss_vlc(logits_per_image, vlc_labels)
+                loss_text = loss_vlc(logits_per_text, vlc_labels)
+                vlc_loss = (loss_image + loss_text)/2
+
+                output_dict["loss"] = masked_lm_loss + next_sentence_loss  + vlc_loss
             
             if flat_masked_lm_labels is not None and is_random_next is None:
 
