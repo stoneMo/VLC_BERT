@@ -1492,18 +1492,18 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_dict['loss'] = None
             return output_dict
 
-        print("====================")
-        print("flat_input_ids:", flat_input_ids.shape)    # [12, 64]
-        print("flat_input_ids[0]:", flat_input_ids[0])    # [12, 64]
-        print("flat_token_type_ids:", flat_token_type_ids.shape)  # [12, 64]
-        print("flat_token_type_ids[0]:", flat_token_type_ids[0])  # [12, 64]
+        # print("====================")
+        # print("flat_input_ids:", flat_input_ids.shape)    # [12, 64]
+        # print("flat_input_ids[0]:", flat_input_ids[0])    # [12, 64]
+        # print("flat_token_type_ids:", flat_token_type_ids.shape)  # [12, 64]
+        # print("flat_token_type_ids[0]:", flat_token_type_ids[0])  # [12, 64]
 
-        print("flat_attention_mask:", flat_attention_mask.shape)  # [12, 164]
-        print("flat_attention_mask:", flat_attention_mask[0])  # [12, 164]
+        # print("flat_attention_mask:", flat_attention_mask.shape)  # [12, 164]
+        # print("flat_attention_mask:", flat_attention_mask[0])  # [12, 164]
 
-        print("flat_visual_embeddings:", flat_visual_embeddings.shape)   # [12, 100, 2048]
-        # print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)  # Nonetype
-        print("visual_embeddings_type:", visual_embeddings_type.shape)      # [12, 100]
+        # print("flat_visual_embeddings:", flat_visual_embeddings.shape)   # [12, 100, 2048]
+        # # print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)  # Nonetype
+        # print("visual_embeddings_type:", visual_embeddings_type.shape)      # [12, 100]
 
         # print("flat_image_text_alignment:", flat_image_text_alignment.shape) Nonetype
 
@@ -1543,24 +1543,24 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 # output_dict["sequence_output"] = sequence_output
                 # output_dict["pooled_output"] = pooled_output
 
-                print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+                # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 # (B*154, 30522)
                 # (B*154)
 
-                print("is_random_next:", is_random_next.shape)
+                # print("is_random_next:", is_random_next.shape)
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
 
-                print("sequence_output:", sequence_output.shape)    # [12, 140, 768]
-                print("pooled_output:", pooled_output.shape)     # [12, 768]
+                # print("sequence_output:", sequence_output.shape)    # [12, 140, 768]
+                # print("pooled_output:", pooled_output.shape)     # [12, 768]
 
                 # TODO: contrastive loss between text embedding and image embedding
                 logits_per_image, logits_per_text = self.vlc(flat_input_ids, sequence_output, pooled_output)
                 
-                print("logits_per_image:", logits_per_image.shape)  # [12, 12]
-                print("logits_per_text:", logits_per_text.shape)   # [12, 12]
+                # print("logits_per_image:", logits_per_image.shape)  # [12, 12]
+                # print("logits_per_text:", logits_per_text.shape)   # [12, 12]
 
                 loss_vlc = CrossEntropyLoss()
 
