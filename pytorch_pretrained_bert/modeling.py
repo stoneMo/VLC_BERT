@@ -1486,14 +1486,17 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
         print("====================")
         print("flat_input_ids:", flat_input_ids.shape)    # [12, 64]
+        print("flat_input_ids[0]:", flat_input_ids[0])    # [12, 64]
         print("flat_token_type_ids:", flat_token_type_ids.shape)  # [12, 64]
+        print("flat_token_type_ids[0]:", flat_token_type_ids[0])  # [12, 64]
+
         print("flat_attention_mask:", flat_attention_mask.shape)  # [12, 164]
 
         print("flat_visual_embeddings:", flat_visual_embeddings.shape)   # [12, 100, 2048]
-        # print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)  # None
-        print("visual_embeddings_type:", visual_embeddings_type.shape)
+        # print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)  # Nonetype
+        print("visual_embeddings_type:", visual_embeddings_type.shape)      # [12, 100]
 
-        print("flat_image_text_alignment:", flat_image_text_alignment.shape)
+        # print("flat_image_text_alignment:", flat_image_text_alignment.shape) Nonetype
 
         sequence_output, pooled_output = self.bert(
             flat_input_ids, 
