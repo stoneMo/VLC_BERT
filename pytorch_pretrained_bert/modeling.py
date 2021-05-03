@@ -468,8 +468,8 @@ class VLCPreTrainingHeads(nn.Module):
         image_features = sequence_output[:,text_length:]   # [batch_size, embed_dim]
         # sequence_output.shape = [batch_size, sequence_length, hidden_dim]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        text_features = torch.max(text_features,dim=1)[0] @ self.text_projection
-        image_features = torch.max(image_features,dim=1)[0] @ self.image_projection
+        text_features = torch.max(text_features,dim=1) @ self.text_projection
+        image_features = torch.max(image_features,dim=1) @ self.image_projection
 
         # normalized features
         image_features = image_features / image_features.norm(dim=-1, keepdim=True)
@@ -1559,8 +1559,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 # TODO: contrastive loss between text embedding and image embedding
                 logits_per_image, logits_per_text = self.vlc(flat_input_ids, sequence_output, pooled_output)
                 
-                print("logits_per_image:", logits_per_image.shape)
-                print("logits_per_text:", logits_per_text.shape)
+                print("logits_per_image:", logits_per_image.shape)  # [12, 12]
+                print("logits_per_text:", logits_per_text.shape)   # [12, 12]
 
                 loss_vlc = CrossEntropyLoss()
 
