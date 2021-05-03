@@ -1541,6 +1541,9 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
 
+                print("sequence_output:", sequence_output.shape)
+                print("pooled_output:", pooled_output.shape)
+
                 # TODO: contrastive loss between text embedding and image embedding
                 logits_per_image, logits_per_text = self.vlc(text, sequence_output, pooled_output)
                 loss_vlc = CrossEntropyLoss()
