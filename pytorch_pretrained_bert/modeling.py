@@ -1558,11 +1558,15 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
                 # TODO: contrastive loss between text embedding and image embedding
                 logits_per_image, logits_per_text = self.vlc(flat_input_ids, sequence_output, pooled_output)
+                
+                print("logits_per_image:", logits_per_image.shape)
+                print("logits_per_text:", logits_per_text.shape)
+
                 loss_vlc = CrossEntropyLoss()
 
                 # symmetric loss function
                 batch_size = logits_per_image.size(0)
-                vlc_labels = torch.arange(batch_size)
+                vlc_labels = torch.arange(batch_size).cuda()
                 loss_image = loss_vlc(logits_per_image, vlc_labels)
                 loss_text = loss_vlc(logits_per_text, vlc_labels)
                 vlc_loss = (loss_image + loss_text)/2
