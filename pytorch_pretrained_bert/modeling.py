@@ -1342,6 +1342,9 @@ class BertVisualModel(PreTrainedBertModel):
                                       text_extended_attention_mask,
                                       output_all_encoded_layers=output_all_encoded_layers)
             sequence_output = encoded_layers[-1]
+
+            print("sequence_output:", sequence_output.shape)
+            print("visual_part:", visual_part.shape)
             new_input = torch.cat((sequence_output, visual_part), dim = 1)
             final_sequence_output = self.additional_layer(new_input, extended_attention_mask)
             pooled_output = self.pooler(final_sequence_output)
@@ -1357,6 +1360,7 @@ class BertVisualModel(PreTrainedBertModel):
                 encoded_layers = encoded_layers[-1]
             return encoded_layers, pooled_output, attn_data_list
         else:
+            print("embedding_output:", embedding_output.shape)
             encoded_layers = self.encoder(embedding_output,
                                           extended_attention_mask,
                                           output_all_encoded_layers=output_all_encoded_layers)
@@ -1539,7 +1543,7 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 # (B*154, 30522)
                 # (B*54)
-                
+
                 print("is_random_next:", is_random_next.shape)
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
