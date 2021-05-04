@@ -9,8 +9,8 @@
   "bert_model_name": "bert-base-uncased",
   "do_lower_case": true,
 
-  "train_batch_size": 2,
-  "eval_batch_size": 2,
+  "train_batch_size": 16,
+  "eval_batch_size": 16,
 
   "do_test": false,
   "skip_training":false,
@@ -27,7 +27,7 @@
   "grad_norm": 0.25,
   "gradient_accumulation_steps": 1,
 
-  "restore_bin":  null,  //Specify which model to initialize from
+  "restore_bin":  "/home/ubuntu/VLC_BERT/vqa_coco_pre_trained.th",  //Specify which model to initialize from
   
   "include_res152": false,
 
