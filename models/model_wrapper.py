@@ -64,28 +64,28 @@ class ModelWrapper():
 
         self.optimizer.zero_grad()
 
-        print("batch:", batch.keys())
-        print(batch["label"])
+        # print("batch:", batch.keys())
+        # print(batch["label"])
         # print("masked_lm_labels:", batch['masked_lm_labels'].shape)    # [48, 46]
         # print("masked_lm_labels:", batch['masked_lm_labels'][0])    # [48, 46]
         # print("is_random_next:", batch['is_random_next'].shape)       # [48]
         # print("is_random_next:", batch['is_random_next'])       # [48]
 
-        print("==========before model==========")
+        # print("==========before model==========")
 
         output_dict = self.model(**batch)
 
-        print("output_dict:", output_dict.keys())
+        # print("output_dict:", output_dict.keys())
         # print("config:", output_dict["config"])
 
-        print("sequence_output:", len(output_dict["sequence_output"]))     # 48
-        print("sequence_output:", output_dict["sequence_output"][0].shape)     # [134, 768]
-        print("pooled_output:", output_dict["pooled_output"].shape)         # [48, 768]
-        print("selection_output", output_dict["selection_output"].shape)
+        # print("sequence_output:", len(output_dict["sequence_output"]))     # 48
+        # print("sequence_output:", output_dict["sequence_output"][0].shape)     # [134, 768]
+        # print("pooled_output:", output_dict["pooled_output"].shape)         # [48, 768]
+        # print("selection_output", output_dict["selection_output"].shape)
 
-        print(output_dict["mod_pool_out1"].shape)
-        print(output_dict["mod_pool_out2"].shape)
-        print("logits:", output_dict["logits"].shape)                      # [48, 141, 30522]
+        # print(output_dict["mod_pool_out1"].shape)
+        # print(output_dict["mod_pool_out2"].shape)
+        # print("logits:", output_dict["logits"].shape)                      # [48, 141, 30522]
         # print("logits:", output_dict["logits"][0,:,:2])                     # [48, 141, 30522]
         # print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)   # [48, 2]
 
