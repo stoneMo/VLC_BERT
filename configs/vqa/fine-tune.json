@@ -9,8 +9,8 @@
   "bert_model_name": "bert-base-uncased",
   "do_lower_case": true,
 
-  "train_batch_size": 16,
-  "eval_batch_size": 16,
+  "train_batch_size": 32,
+  "eval_batch_size": 32,
 
   "do_test": false,
   "skip_training":false,
