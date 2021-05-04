@@ -20,24 +20,24 @@ from tqdm import tqdm
 from allennlp.nn.util import device_mapping
 
 
-from VQATR.utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
+from VLC_BERT.utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
     restore_checkpoint, print_para, restore_best_checkpoint, restore_checkpoint_flexible, load_state_dict_flexible, compute_score_with_logits
 
-from VQATR.dataloaders.vcr import VCR, VCRLoader
+from VLC_BERT.dataloaders.vcr import VCR, VCRLoader
 try:
-    from VQATR.dataloaders.coco_dataset import COCODataset
+    from VLC_BERT.dataloaders.coco_dataset import COCODataset
 except:
     print("Import COCO dataset failed.")
 try:   
-    from VQATR.dataloaders.nlvr_dataset import NLVRDataset
+    from VLC_BERT.dataloaders.nlvr_dataset import NLVRDataset
 except:
     print("Import NLVR2 dataset failed.")
 try:
-    from VQATR.dataloaders.vqa_dataset import VQADataset
+    from VLC_BERT.dataloaders.vqa_dataset import VQADataset
 except:
     print("Import VQA dataset failed.")
 try:
-    from VQATR.dataloaders.flickr_dataset import Flickr30kFeatureDataset
+    from VLC_BERT.dataloaders.flickr_dataset import Flickr30kFeatureDataset
 except:
     print("Import Flickr30K dataset failed.")
 
@@ -55,8 +55,8 @@ except:
     resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))'''
 
 from allennlp.models import Model
-from VQATR.models.model_wrapper import ModelWrapper
-from VQATR.models import model
+from VLC_BERT.models.model_wrapper import ModelWrapper
+from VLC_BERT.models import model
 
 #################################
 from attrdict import AttrDict
@@ -196,7 +196,7 @@ train_loader, val_loader, test_loader, train_set_size = get_dataset_loader(args,
 
 ARGS_RESET_EVERY = args.get("print_every", 100)
 
-
+print("================initializemodel======================")
 train_model = ModelWrapper(args, train_set_size)
 
 #Loading from pre-trained model
@@ -235,7 +235,7 @@ for epoch_num in range(start_epoch, stop_epoch):
     train_model.model.train()
     if not args.get("skip_training", False):
         for b, (time_per_batch, batch) in enumerate(time_batch(tqdm(train_loader), reset_every=ARGS_RESET_EVERY)):
-
+            
             batch = _to_gpu(batch)
             
             output_dict = train_model.step(batch)
@@ -246,6 +246,7 @@ for epoch_num in range(start_epoch, stop_epoch):
                                             'crl': output_dict.get("cnn_regularization_loss", 0.0),
                                             'next_sentence_loss': output_dict["next_sentence_loss"].mean().item() if "next_sentence_loss" in output_dict else 0.0,
                                             'masked_lm_loss': output_dict["masked_lm_loss"].mean().item() if "masked_lm_loss" in output_dict else 0.0,
+                                            'vlc_loss': output_dict["vlc_loss"].mean().item() if "vlc_loss" in output_dict else 0.0,
                                             'accuracy': (train_model.model.module).get_metrics(
                                                 reset=(b % ARGS_RESET_EVERY) == 0)[
                                                 'accuracy'],

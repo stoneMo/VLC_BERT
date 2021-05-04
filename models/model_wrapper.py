@@ -20,7 +20,7 @@ from allennlp.nn.util import device_mapping
 from utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
     restore_checkpoint, print_para, restore_best_checkpoint, load_state_dict_flexible
 
-from VQATR.pytorch_pretrained_bert.optimization import BertAdam, WarmupLinearSchedule
+from VLC_BERT.pytorch_pretrained_bert.optimization import BertAdam, WarmupLinearSchedule
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
@@ -37,6 +37,7 @@ class ModelWrapper():
         self.args = args
         self.args.gradient_accumulation_steps = args.get("gradient_accumulation_steps", 1)
         self.args.fp16 = args.get("fp16", False)
+        print("+++++++++++initializa model here+++++++++++")
         self.initialize_model(args)
         self.initialize_opimizer(args, train_dataset_length)
 
@@ -63,7 +64,32 @@ class ModelWrapper():
 
         self.optimizer.zero_grad()
 
+        print("batch:", batch.keys())
+        print(batch["label"])
+        # print("masked_lm_labels:", batch['masked_lm_labels'].shape)    # [48, 46]
+        # print("masked_lm_labels:", batch['masked_lm_labels'][0])    # [48, 46]
+        # print("is_random_next:", batch['is_random_next'].shape)       # [48]
+        # print("is_random_next:", batch['is_random_next'])       # [48]
+
+        print("==========before model==========")
+
         output_dict = self.model(**batch)
+
+        print("output_dict:", output_dict.keys())
+        # print("config:", output_dict["config"])
+
+        print("sequence_output:", len(output_dict["sequence_output"]))     # 48
+        print("sequence_output:", output_dict["sequence_output"][0].shape)     # [134, 768]
+        print("pooled_output:", output_dict["pooled_output"].shape)         # [48, 768]
+        print("selection_output", output_dict["selection_output"].shape)
+
+        print(output_dict["mod_pool_out1"].shape)
+        print(output_dict["mod_pool_out2"].shape)
+        print("logits:", output_dict["logits"].shape)                      # [48, 141, 30522]
+        # print("logits:", output_dict["logits"][0,:,:2])                     # [48, 141, 30522]
+        # print("seq_relationship_score:", output_dict["seq_relationship_score"].shape)   # [48, 2]
+
+        # print("==========after model==========")
 
         loss = output_dict['loss']
 
@@ -140,6 +166,7 @@ class ModelWrapper():
 
     def initialize_model(self, args):
         model = Model.from_params(vocab=None, params=Params(args.model))
+        print("args.model:", args.model)
         if args.get("fp16", False):
             model.half()
             print("Using FP 16, Model Halfed")
