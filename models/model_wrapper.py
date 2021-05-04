@@ -64,8 +64,17 @@ class ModelWrapper():
         self.optimizer.zero_grad()
 
         print("batch:", batch.keys())
-        print("masked_lm_labels:", batch['masked_lm_labels'].shape)    # [48, 46]
-        print("masked_lm_labels:", batch['masked_lm_labels'][0])    # [48, 46]
+        # print("masked_lm_labels:", batch['masked_lm_labels'].shape)    # [48, 46]
+        # print("masked_lm_labels:", batch['masked_lm_labels'][0])    # [48, 46]
+
+        print("image_feat_variable:", batch['image_feat_variable'].shape)
+        print("image_dim_variable:", batch['image_dim_variable'].shape)
+        print("bert_input_ids:", batch['bert_input_ids'].shape)
+        print("bert_input_mask:", batch['bert_input_mask'].shape)
+        print("bert_input_type_ids:", batch['bert_input_type_ids'].shape)
+        print("is_random_next:", batch['is_random_next'].shape)
+        print("label:", batch['label'].shape)
+
         print("is_random_next:", batch['is_random_next'].shape)       # [48]
         print("is_random_next:", batch['is_random_next'])       # [48]
 
