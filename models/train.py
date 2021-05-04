@@ -196,7 +196,7 @@ train_loader, val_loader, test_loader, train_set_size = get_dataset_loader(args,
 
 ARGS_RESET_EVERY = args.get("print_every", 100)
 
-print("================initializemodel======================")
+
 train_model = ModelWrapper(args, train_set_size)
 
 #Loading from pre-trained model
