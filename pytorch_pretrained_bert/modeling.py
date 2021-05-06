@@ -1881,11 +1881,11 @@ class OutputBlock(nn.Module):
     def __init__(self, config):
         super(OutputBlock, self).__init__()
         layer = BertLayer(config)
-        self.output_layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(6)])
+        self.output_layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(3)])
 
 
     def forward(self, hidden_states, attention_mask):
         for layer_module in self.output_layer:
             hidden_states = layer_module(hidden_states, attention_mask)
-            
+
         return hidden_states
