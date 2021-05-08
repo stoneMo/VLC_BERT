@@ -1922,6 +1922,17 @@ class OutputBlock(nn.Module):
 
         return hidden_states
 
+class Adapter(nn.Module):
+    def __init__(self, dim_in, dim_hid=100):
+        super(Adapter, self).__init__()
+        self.lin_down = nn.Linear(dim_in, dim_hid)
+        self.lin_up = nn.Linear(dim_hid, dim_in)
+    def forward(self, x):
+        x = self.lin_down(x)
+        x = F.relu(x)
+        x = self.lin_up(x)
+        return x
+
 # class BertLayerAdapter(nn.Module):
 #     def __init__(self, bert_layer):
 #         super(BertLayerAdapter, self).__init__()
