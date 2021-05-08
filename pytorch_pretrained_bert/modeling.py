@@ -329,16 +329,46 @@ class BertLayer(nn.Module):
 
         self.output_attention_weights = config.output_attention_weights
 
+        ### added by Jingfei
+        if config.training_head_type == "vqa":
+            self.adapter1 = Adapter(config.intermediate_size)
+            self.adapter2 = Adapter(config.hidden_size)
+            self.attention.train(False)
+            self.intermediate.train(False)
+            self.output.train(False)
+
+        self.training_head_type = config.training_head_type
+
     def forward(self, hidden_states, attention_mask):
+        # if self.output_attention_weights:
+        #     attention_output, attention_weights = self.attention(hidden_states, attention_mask)
+        #     intermediate_output = self.intermediate(attention_output)
+        #     layer_output = self.output(intermediate_output, attention_output)
+        #     return layer_output, attention_weights
+        # else:
+        #     attention_output = self.attention(hidden_states, attention_mask)
+        #     intermediate_output = self.intermediate(attention_output)
+        #     layer_output = self.output(intermediate_output, attention_output)
+        #     return layer_output
+
+        ### added by Jingfei
         if self.output_attention_weights:
             attention_output, attention_weights = self.attention(hidden_states, attention_mask)
             intermediate_output = self.intermediate(attention_output)
+            if self.training_head_type == "vqa":
+                intermediate_output = self.adapter1(intermediate_output)
             layer_output = self.output(intermediate_output, attention_output)
+            if self.training_head_type == "vqa":
+                layer_output = self.adapter2(layer_output)
             return layer_output, attention_weights
         else:
             attention_output = self.attention(hidden_states, attention_mask)
             intermediate_output = self.intermediate(attention_output)
+            if self.training_head_type == "vqa":
+                intermediate_output = self.adapter1(intermediate_output)
             layer_output = self.output(intermediate_output, attention_output)
+            if self.training_head_type == "vqa":
+                layer_output = self.adapter2(layer_output)
             return layer_output
 
 
@@ -1384,6 +1414,8 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         config.bypass_transformer = bypass_transformer
 
         config.output_attention_weights = output_attention_weights  
+        config.training_head_type = training_head_type
+
         self.output_attention_weights = output_attention_weights  
 
         self.cut_first = cut_first
@@ -1421,15 +1453,15 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
 
         ### added by Jingfei
-        self.embeddings = BertEmbeddingsWithVisualEmbedding(config)
-        self.config = config
-        self.selection_layer = SelectionBlock(config)
-        self.output_layer = OutputBlock(config)
+        # self.embeddings = BertEmbeddingsWithVisualEmbedding(config)
+        # self.config = config
+        # self.selection_layer = SelectionBlock(config)
+        # self.output_layer = OutputBlock(config)
 
         # freeze the pretrain bert
-        if self.training_head_type == "vqa":
-            for para in self.bert.parameters():
-                para.requires_grad = False
+        # if self.training_head_type == "vqa":
+        #     for para in self.bert.parameters():
+        #         para.requires_grad = False
 
 
 
@@ -1619,38 +1651,38 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         elif self.training_head_type == "vqa":
 
             ## add by Jingfei
-            if flat_attention_mask is None:
-                flat_attention_mask = torch.ones_like(input_ids)
-            if flat_token_type_ids is None:
-                flat_token_type_ids = torch.zeros_like(input_ids)
+            # if flat_attention_mask is None:
+            #     flat_attention_mask = torch.ones_like(input_ids)
+            # if flat_token_type_ids is None:
+            #     flat_token_type_ids = torch.zeros_like(input_ids)
 
-            # We create a 3D attention mask from a 2D tensor mask.
-            # Sizes are [batch_size, 1, 1, to_seq_length]
-            # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
-            # this attention mask is more simple than the triangular masking of causal attention
-            # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
-            extended_attention_mask = flat_attention_mask.unsqueeze(1).unsqueeze(2)
+            # # We create a 3D attention mask from a 2D tensor mask.
+            # # Sizes are [batch_size, 1, 1, to_seq_length]
+            # # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
+            # # this attention mask is more simple than the triangular masking of causal attention
+            # # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
+            # extended_attention_mask = flat_attention_mask.unsqueeze(1).unsqueeze(2)
 
-            # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
-            # masked positions, this operation will create a tensor which is 0.0 for
-            # positions we want to attend and -10000.0 for masked positions.
-            # Since we are adding it to the raw scores before the softmax, this is
-            # effectively the same as removing these entirely.
-            extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
-            extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+            # # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
+            # # masked positions, this operation will create a tensor which is 0.0 for
+            # # positions we want to attend and -10000.0 for masked positions.
+            # # Since we are adding it to the raw scores before the softmax, this is
+            # # effectively the same as removing these entirely.
+            # extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
+            # extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
 
-            embedding_output = self.embeddings(flat_input_ids, flat_token_type_ids, visual_embeddings = flat_visual_embeddings, position_embeddings_visual = flat_position_embeddings_visual, visual_embeddings_type = visual_embeddings_type, image_text_alignment = flat_image_text_alignment, confidence = flat_confidence)
-            selection_output = self.selection_layer(embedding_output, extended_attention_mask)
-            output_dict['selection_output'] = selection_output
+            # embedding_output = self.embeddings(flat_input_ids, flat_token_type_ids, visual_embeddings = flat_visual_embeddings, position_embeddings_visual = flat_position_embeddings_visual, visual_embeddings_type = visual_embeddings_type, image_text_alignment = flat_image_text_alignment, confidence = flat_confidence)
+            # selection_output = self.selection_layer(embedding_output, extended_attention_mask)
+            # output_dict['selection_output'] = selection_output
 
-            concatenate_input = selection_output + sequence_output
-            final_output = self.output_layer(concatenate_input, extended_attention_mask)
+            # concatenate_input = selection_output + sequence_output
+            # final_output = self.output_layer(concatenate_input, extended_attention_mask)
 
 
             index_to_gather = flat_input_mask.sum(1) - 2
 
-            pooled_output = torch.gather(final_output, 1, index_to_gather.unsqueeze(-1).unsqueeze(-1).expand(index_to_gather.size(0), 1, sequence_output.size(-1)))
+            pooled_output = torch.gather(sequence_output, 1, index_to_gather.unsqueeze(-1).unsqueeze(-1).expand(index_to_gather.size(0), 1, sequence_output.size(-1)))
 
             flat_input_ids = torch.gather(flat_input_ids, 1, index_to_gather.unsqueeze(-1).expand(index_to_gather.size(0), 1))
             output_dict["mod_pool_out1"] = pooled_output
@@ -1881,3 +1913,44 @@ class OutputBlock(nn.Module):
 
     def forward(self, hidden_states, attention_mask):
         return self.output_layer(hidden_states, attention_mask)
+
+class Adapter(nn.Module):
+    def __init__(self, dim_in, dim_hid=100):
+        super(Adapter, self).__init__()
+        self.lin_down = nn.Linear(dim_in, dim_hid)
+        self.lin_up = nn.Linear(dim_hid, dim_in)
+    def forward(self, x):
+        x = self.lin_down(x)
+        x = F.relu(x)
+        x = self.lin_up(x)
+        return x
+
+# class BertLayerAdapter(nn.Module):
+#     def __init__(self, bert_layer):
+#         super(BertLayerAdapter, self).__init__()
+#         self.attention = bert_layer.attention
+#         self.intermediate = bert_layer.intermediate
+#         # TODO: define dim_intermediate
+#         self.adapter1 = Adapter(dim_intermediate)
+#         self.output = bert_layer.output
+#         # TODO: define dim_output
+#         self.adapter2 = Adapter(dim_output)
+#         self.output_attention_weights = bert_layer.output_attention_weights
+#         self.attention.train(False)
+#         self.intermediate.train(False)
+#         self.output.train(False)
+#     def forward(self, hidden_states, attention_mask):
+#         if self.output_attention_weights:
+#             attention_output, attention_weights = self.attention(hidden_states, attention_mask)
+#             intermediate_output = self.intermediate(attention_output)
+#             intermediate_output = self.adapter1(intermediate_output)
+#             layer_output = self.output(intermediate_output, attention_output)
+#             layer_output = self.adapter2(layer_output)
+#             return layer_output, attention_weights
+#         else:
+#             attention_output = self.attention(hidden_states, attention_mask)
+#             intermediate_output = self.intermediate(attention_output)
+#             intermediate_output = self.adapter1(intermediate_output)
+#             layer_output = self.output(intermediate_output, attention_output)
+#             layer_output = self.adapter2(layer_output)
+#             return layer_output
