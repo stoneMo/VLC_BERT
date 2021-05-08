@@ -1901,29 +1901,26 @@ def batched_index_select(t, dim, inds):
 class SelectionBlock(nn.Module):
     def __init__(self, config):
         super(SelectionBlock, self).__init__()
-        self.selection_layer = BertLayer(config)
+        layer = BertLayer(config)
+        self.selection_layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(6)])
 
     def forward(self, hidden_states, attention_mask):
-        return self.selection_layer(hidden_states, attention_mask)
+        for layer_module in self.selection_layer:
+            hidden_states = layer_module(hidden_states, attention_mask)
+        return hidden_states
 
 class OutputBlock(nn.Module):
     def __init__(self, config):
         super(OutputBlock, self).__init__()
-        self.output_layer = BertLayer(config)
+        layer = BertLayer(config)
+        self.output_layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(3)])
+
 
     def forward(self, hidden_states, attention_mask):
-        return self.output_layer(hidden_states, attention_mask)
+        for layer_module in self.output_layer:
+            hidden_states = layer_module(hidden_states, attention_mask)
 
-class Adapter(nn.Module):
-    def __init__(self, dim_in, dim_hid=100):
-        super(Adapter, self).__init__()
-        self.lin_down = nn.Linear(dim_in, dim_hid)
-        self.lin_up = nn.Linear(dim_hid, dim_in)
-    def forward(self, x):
-        x = self.lin_down(x)
-        x = F.relu(x)
-        x = self.lin_up(x)
-        return x
+        return hidden_states
 
 # class BertLayerAdapter(nn.Module):
 #     def __init__(self, bert_layer):
