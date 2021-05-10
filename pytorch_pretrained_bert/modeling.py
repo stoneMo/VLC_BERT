@@ -377,14 +377,19 @@ class BertEncoder(nn.Module):
 
         ### added by Jingfei
         if config.training_head_type == "vqa":
-            for i in range(-1, -4, -1):
+            for i in range(2):
                 layer_module = self.layer[i]
-                layer_module.attention.train(False)
-                layer_module.intermediate.train(False)
-                layer_module.output.train(False)
-
-                layer_module.attention.output.LayerNorm.train(True)
-                layer_module.output.LayerNorm.train(True)
+                for para in layer_module.attention.parameters():
+                    para.requires_grad = False
+                for para in layer_module.intermediate.parameters():
+                    para.requires_grad = False
+                for para in layer_module.output.parameters():
+                    para.requires_grad = False
+                
+                for para in layer_module.output.LayerNorm.parameters():
+                    para.requires_grad = True
+                for para in layer_module.output.LayerNorm.parameters():
+                    para.requires_grad = True
 
     def forward(self, hidden_states, attention_mask, output_all_encoded_layers=True):
         if self.output_attention_weights:
