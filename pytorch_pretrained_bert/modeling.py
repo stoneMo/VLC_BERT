@@ -1465,15 +1465,15 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
 
 
         ### added by Jingfei
-        self.embeddings = BertEmbeddingsWithVisualEmbedding(config)
-        self.config = config
-        self.selection_layer = SelectionBlock(config)
-        self.output_layer = OutputBlock(config)
+        # self.embeddings = BertEmbeddingsWithVisualEmbedding(config)
+        # self.config = config
+        # self.selection_layer = SelectionBlock(config)
+        # self.output_layer = OutputBlock(config)
 
-        # freeze the pretrain bert
-        if self.training_head_type == "vqa":
-            for para in self.bert.parameters():
-                para.requires_grad = False
+        # # freeze the pretrain bert
+        # if self.training_head_type == "vqa":
+        #     for para in self.bert.parameters():
+        #         para.requires_grad = False
 
 
 
@@ -1663,38 +1663,38 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         elif self.training_head_type == "vqa":
 
             ## add by Jingfei
-            if flat_attention_mask is None:
-                flat_attention_mask = torch.ones_like(input_ids)
-            if flat_token_type_ids is None:
-                flat_token_type_ids = torch.zeros_like(input_ids)
+            # if flat_attention_mask is None:
+            #     flat_attention_mask = torch.ones_like(input_ids)
+            # if flat_token_type_ids is None:
+            #     flat_token_type_ids = torch.zeros_like(input_ids)
 
-            # We create a 3D attention mask from a 2D tensor mask.
-            # Sizes are [batch_size, 1, 1, to_seq_length]
-            # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
-            # this attention mask is more simple than the triangular masking of causal attention
-            # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
-            extended_attention_mask = flat_attention_mask.unsqueeze(1).unsqueeze(2)
+            # # We create a 3D attention mask from a 2D tensor mask.
+            # # Sizes are [batch_size, 1, 1, to_seq_length]
+            # # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
+            # # this attention mask is more simple than the triangular masking of causal attention
+            # # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
+            # extended_attention_mask = flat_attention_mask.unsqueeze(1).unsqueeze(2)
 
-            # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
-            # masked positions, this operation will create a tensor which is 0.0 for
-            # positions we want to attend and -10000.0 for masked positions.
-            # Since we are adding it to the raw scores before the softmax, this is
-            # effectively the same as removing these entirely.
-            extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
-            extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+            # # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
+            # # masked positions, this operation will create a tensor which is 0.0 for
+            # # positions we want to attend and -10000.0 for masked positions.
+            # # Since we are adding it to the raw scores before the softmax, this is
+            # # effectively the same as removing these entirely.
+            # extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
+            # extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
 
-            embedding_output = self.embeddings(flat_input_ids, flat_token_type_ids, visual_embeddings = flat_visual_embeddings, position_embeddings_visual = flat_position_embeddings_visual, visual_embeddings_type = visual_embeddings_type, image_text_alignment = flat_image_text_alignment, confidence = flat_confidence)
-            selection_output = self.selection_layer(embedding_output, extended_attention_mask)
-            output_dict['selection_output'] = selection_output
+            # embedding_output = self.embeddings(flat_input_ids, flat_token_type_ids, visual_embeddings = flat_visual_embeddings, position_embeddings_visual = flat_position_embeddings_visual, visual_embeddings_type = visual_embeddings_type, image_text_alignment = flat_image_text_alignment, confidence = flat_confidence)
+            # selection_output = self.selection_layer(embedding_output, extended_attention_mask)
+            # output_dict['selection_output'] = selection_output
 
-            concatenate_input = selection_output + sequence_output
-            final_output = self.output_layer(concatenate_input, extended_attention_mask)
+            # concatenate_input = selection_output + sequence_output
+            # final_output = self.output_layer(concatenate_input, extended_attention_mask)
 
 
             index_to_gather = flat_input_mask.sum(1) - 2
 
-            pooled_output = torch.gather(final_output, 1, index_to_gather.unsqueeze(-1).unsqueeze(-1).expand(index_to_gather.size(0), 1, sequence_output.size(-1)))
+            pooled_output = torch.gather(sequence_output, 1, index_to_gather.unsqueeze(-1).unsqueeze(-1).expand(index_to_gather.size(0), 1, sequence_output.size(-1)))
 
             flat_input_ids = torch.gather(flat_input_ids, 1, index_to_gather.unsqueeze(-1).expand(index_to_gather.size(0), 1))
             output_dict["mod_pool_out1"] = pooled_output
@@ -1910,21 +1910,21 @@ def batched_index_select(t, dim, inds):
 
 
 #### added by Jingfei
-class SelectionBlock(nn.Module):
-    def __init__(self, config):
-        super(SelectionBlock, self).__init__()
-        self.selection_layer = BertLayer(config)
+# class SelectionBlock(nn.Module):
+#     def __init__(self, config):
+#         super(SelectionBlock, self).__init__()
+#         self.selection_layer = BertLayer(config)
 
-    def forward(self, hidden_states, attention_mask):
-        return self.selection_layer(hidden_states, attention_mask)
+#     def forward(self, hidden_states, attention_mask):
+#         return self.selection_layer(hidden_states, attention_mask)
 
-class OutputBlock(nn.Module):
-    def __init__(self, config):
-        super(OutputBlock, self).__init__()
-        self.output_layer = BertLayer(config)
+# class OutputBlock(nn.Module):
+#     def __init__(self, config):
+#         super(OutputBlock, self).__init__()
+#         self.output_layer = BertLayer(config)
 
-    def forward(self, hidden_states, attention_mask):
-        return self.output_layer(hidden_states, attention_mask)
+#     def forward(self, hidden_states, attention_mask):
+#         return self.output_layer(hidden_states, attention_mask)
 
 class Adapter(nn.Module):
     def __init__(self, dim_in, dim_hid=256):
