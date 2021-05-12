@@ -13,6 +13,10 @@ We firstly reproduce several existing models and take them as a baselines that w
 2. [VisualBERT](https://github.com/stoneMo/VLC-BERT/tree/VisualBERT)
 3. [VL-BERT](https://github.com/stoneMo/VLC-BERT/tree/VLBERT)
 
+## VLC-BERT
+
+We apply contrastive pre-training for visual-linguistic data and fine-tune with adaptation network in order to build VLC-BERT. We use batch size of 512 for 10 epochs for pre-training with Adam optimizer.
+
 
 ## References
 
