@@ -21,7 +21,7 @@ We apply contrastive pre-training for visual-linguistic data and fine-tune with 
 ## Requirements 
 
 ```
-pip install -r allennlp-requirement.txt
+pip install -r allennlp-requirements.txt
 
 ```
 
