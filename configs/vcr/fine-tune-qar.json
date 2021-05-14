@@ -4,8 +4,8 @@
 
   "rationale": true, // Doing q->a or qa->r
 
-  "vcr_annots_dir":"X_VCR", //Please replace this with the actual corresponding folder
-  "vcr_image_dir":"X_VCR/vcr1images", //Please replace this with the actual corresponding folder
+  "vcr_annots_dir":"/data1/moshentong/VLCBERT/VQATR/X_VCR", //Please replace this with the actual corresponding folder
+  "vcr_image_dir":"/data1/moshentong/VLCBERT/VQATR/X_VCR/vcr1images", //Please replace this with the actual corresponding folder
 
   "use_fixed_feature": false,
   "image_screening_parameters": null,

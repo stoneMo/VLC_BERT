@@ -2,7 +2,7 @@
 {
   "dataset": "coco",
 
-  "data_root":"/data1/moshentong/ObjectDetection/VisualBERT/VQATR/X_COCO", //Please replace this with the actual corresponding folder
+  "data_root":"/data1/moshentong/VLCBERT/VQATR/X_COCO", //Please replace this with the actual corresponding folder
 
   "expand_coco": true,
   "exclude_minival": true,

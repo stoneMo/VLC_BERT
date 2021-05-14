@@ -17,10 +17,39 @@ We firstly reproduce several existing models and take them as a baselines that w
 
 We apply contrastive pre-training for visual-linguistic data and fine-tune with adaptation network in order to build VLC-BERT. We use batch size of 512 for 10 epochs for pre-training with Adam optimizer.
 
+## Running Command 
+
+
+### VQA 
+```
+# coco pre-training
+python train.py -folder ../experiments/vqa/coco_pre_train_vlc -config ../configs/vqa/coco-pre-train.json
+
+# fine-tuning
+python train.py -folder ../experiments/vqa/vqa_finetune_vlc -config ../configs/vqa/fine-tune.json
+
+# testing
+python train.py -folder ../experiments/vqa/vqa_test_vlc -config ../configs/vqa/test.json
+
+```
+
+### VCR
+```
+# coco pre-training
+python train.py -folder ../experiments/vcr/coco_pre_train_vlc -config ../configs/vcr/coco-pre-train.json
+
+# qa fine-tuning
+python train.py -folder ../experiments/vcr/vcr_finetune_qa_vlc -config ../configs/vcr/fine-tune-qa.json
+
+# qar fine-tuning 
+python train.py -folder ../experiments/vcr/vcr_finetune_qar_vlc -config ../configs/vcr/fine-tune-qar.json
+
+```
+
 
 ## References
 
-1]Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez,Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. InAdvances in Neural Informa-tion Processing Systems, page 5998–6008, 2017.
+[1]Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez,Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. InAdvances in Neural Informa-tion Processing Systems, page 5998–6008, 2017.
 
 [2]Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training ofdeep bidirectional transformers for language understanding.arXiv preprint arXiv:1810.04805,2018.
 

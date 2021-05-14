@@ -30,7 +30,7 @@ from dataloaders.bert_field import IntArrayField
 from allennlp.data.fields import ListField
 
 from .bert_data_utils import *
-from VQATR.pytorch_pretrained_bert.tokenization import BertTokenizer
+from VLC_BERT.pytorch_pretrained_bert.tokenization import BertTokenizer
 
 from pycocotools.coco import COCO
 class COCODataset(Dataset):

@@ -17,8 +17,8 @@ from allennlp.modules.matrix_attention import BilinearMatrixAttention
 from allennlp.nn.util import masked_softmax, weighted_sum, replace_masked_values
 from allennlp.nn import InitializerApplicator
 
-from pytorch_pretrained_bert.modeling import BertForMultipleChoice, TrainVisualBERTObjective #BertForMultipleChoice, BertForVisualMultipleChoice, BertForVisualPreTraining, BertForPreTraining, BertForVisualQA
-from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
+from VLC_BERT.pytorch_pretrained_bert.modeling import BertForMultipleChoice, TrainVisualBERTObjective #BertForMultipleChoice, BertForVisualMultipleChoice, BertForVisualPreTraining, BertForPreTraining, BertForVisualQA
+from VLC_BERT.pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
 @Model.register("VisualBERTDetector")
 class VisualBERTDetector(Model):
@@ -55,6 +55,7 @@ class VisualBERTDetector(Model):
                 bypass_transformer = bypass_transformer,
                 random_initialize = random_initialize,
                 output_attention_weights = output_attention_weights)
+
         if special_visual_initialize:
             self.bert.bert.embeddings.special_intialize()
     
@@ -221,6 +222,9 @@ class VisualBERTFixedImageEmbedding(Model):
                 bypass_transformer = bypass_transformer,
                 random_initialize = random_initialize,
                 output_attention_weights = output_attention_weights)
+        
+        print("self.bert:", self.bert)
+
         if special_visual_initialize:
             self.bert.bert.embeddings.special_intialize()
 

@@ -19,7 +19,7 @@ from allennlp.data.fields import TextField, ListField, LabelField, SequenceLabel
 from dataloaders.bert_field import IntArrayField
 
 from .bert_data_utils import *
-from VQATR.pytorch_pretrained_bert.tokenization import BertTokenizer
+from VLC_BERT.pytorch_pretrained_bert.tokenization import BertTokenizer
 
 imdb_version = 1 # Not sure what this does... Just follow it
 

@@ -1,6 +1,6 @@
 {
   "dataset": "coco",
-  "data_root": "/data1/moshentong/ObjectDetection/VisualBERT/VQATR/X_COCO", //Please replace this with the actual corresponding folder
+  "data_root": "/data1/moshentong/VLCBERT/VQATR/X_COCO", //Please replace this with the actual corresponding folder
 
   "image_feature_type": "vqa_fix_100",
   "image_screening_parameters": null,
@@ -28,7 +28,7 @@
   "patience": 3,
   "learning_rate": 5e-5,
   "num_train_epochs":  10,
-  "warmup_proportion": 0.1,
+  "warmup_proportion": 0.1,    // 0.1
   "grad_norm": 1.0,
   "gradient_accumulation_steps": 1,
 

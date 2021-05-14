@@ -29,6 +29,7 @@ import logging
 import tarfile
 import tempfile
 import shutil
+import numpy as np
 
 import torch
 from torch import nn
@@ -267,9 +268,11 @@ class BertSelfOutput(nn.Module):
         self.LayerNorm = BertLayerNorm(config.hidden_size, eps=1e-12)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, hidden_states, input_tensor):
+    def forward(self, hidden_states, input_tensor, adapter=None):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
+        if adapter != None:
+            hidden_states = adapter(hidden_states)
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
         return hidden_states
 
@@ -281,10 +284,10 @@ class BertAttention(nn.Module):
 
         self.output_attention_weights = config.output_attention_weights
 
-    def forward(self, input_tensor, attention_mask):
+    def forward(self, input_tensor, attention_mask, adapter=None):
         if self.output_attention_weights:
             self_output, attention_weights = self.self(input_tensor, attention_mask)
-            attention_output = self.output(self_output, input_tensor)
+            attention_output = self.output(self_output, input_tensor, adapter=adapter)
             return attention_output, attention_weights
         else:
             self_output = self.self(input_tensor, attention_mask)
@@ -312,9 +315,11 @@ class BertOutput(nn.Module):
         self.LayerNorm = BertLayerNorm(config.hidden_size, eps=1e-12)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, hidden_states, input_tensor):
+    def forward(self, hidden_states, input_tensor, adapter=None):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
+        if adapter != None:
+            hidden_states = adapter(hidden_states)
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
         return hidden_states
 
@@ -328,16 +333,38 @@ class BertLayer(nn.Module):
 
         self.output_attention_weights = config.output_attention_weights
 
+        ### added by Jingfei
+        if config.training_head_type == "vqa":
+            self.adapter1 = Adapter(config.intermediate_size)
+            self.adapter2 = Adapter(config.hidden_size)
+        else:
+            self.adapter1 = None
+            self.adapter2 = None
+
+        self.training_head_type = config.training_head_type
+
     def forward(self, hidden_states, attention_mask):
+        # if self.output_attention_weights:
+        #     attention_output, attention_weights = self.attention(hidden_states, attention_mask)
+        #     intermediate_output = self.intermediate(attention_output)
+        #     layer_output = self.output(intermediate_output, attention_output)
+        #     return layer_output, attention_weights
+        # else:
+        #     attention_output = self.attention(hidden_states, attention_mask)
+        #     intermediate_output = self.intermediate(attention_output)
+        #     layer_output = self.output(intermediate_output, attention_output)
+        #     return layer_output
+
+        ### added by Jingfei
         if self.output_attention_weights:
-            attention_output, attention_weights = self.attention(hidden_states, attention_mask)
+            attention_output, attention_weights = self.attention(hidden_states, attention_mask, adapter=self.adapter1)
             intermediate_output = self.intermediate(attention_output)
-            layer_output = self.output(intermediate_output, attention_output)
+            layer_output = self.output(intermediate_output, attention_output, adapter=self.adapter2)
             return layer_output, attention_weights
         else:
-            attention_output = self.attention(hidden_states, attention_mask)
+            attention_output = self.attention(hidden_states, attention_mask, adapter=self.adapter1)
             intermediate_output = self.intermediate(attention_output)
-            layer_output = self.output(intermediate_output, attention_output)
+            layer_output = self.output(intermediate_output, attention_output, adapter=self.adapter2)
             return layer_output
 
 
@@ -347,6 +374,22 @@ class BertEncoder(nn.Module):
         layer = BertLayer(config)
         self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(config.num_hidden_layers)])
         self.output_attention_weights = config.output_attention_weights
+
+        ### added by Jingfei
+        if config.training_head_type == "vqa":
+            for i in range(2):
+                layer_module = self.layer[i]
+                for para in layer_module.attention.parameters():
+                    para.requires_grad = False
+                for para in layer_module.intermediate.parameters():
+                    para.requires_grad = False
+                for para in layer_module.output.parameters():
+                    para.requires_grad = False
+                
+                for para in layer_module.output.LayerNorm.parameters():
+                    para.requires_grad = True
+                for para in layer_module.output.LayerNorm.parameters():
+                    para.requires_grad = True
 
     def forward(self, hidden_states, attention_mask, output_all_encoded_layers=True):
         if self.output_attention_weights:
@@ -452,7 +495,35 @@ class BertPreTrainingHeads(nn.Module):
         return prediction_scores, seq_relationship_score
 
 
+class VLCPreTrainingHeads(nn.Module):
+    def __init__(self, hidden_dim, embed_dim=768):
+        super(VLCPreTrainingHeads, self).__init__()
+        self.text_projection = nn.Parameter(torch.empty(hidden_dim, embed_dim))
+        self.image_projection = nn.Parameter(torch.empty(hidden_dim, embed_dim))
+        self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
 
+    def forward(self, text, sequence_output, pooled_output):
+        
+        batch_size = text.size(0)
+        text_length = text.size(1)
+        text_features = sequence_output[:,:text_length]
+        image_features = sequence_output[:,text_length:]   # [batch_size, embed_dim]
+        # sequence_output.shape = [batch_size, sequence_length, hidden_dim]
+        # take features from the eot embedding (eot_token is the highest number in each sequence)
+        text_features = torch.max(text_features,dim=1)[0] @ self.text_projection
+        image_features = torch.max(image_features,dim=1)[0] @ self.image_projection
+
+        # normalized features
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+
+        # cosine similarity as logits
+        logit_scale = self.logit_scale.exp()
+        logits_per_image = logit_scale * image_features @ text_features.t()
+        logits_per_text = logit_scale * text_features @ image_features.t()
+
+        # shape = [global_batch_size, global_batch_size]
+        return logits_per_image, logits_per_text
 
 
 class PreTrainedBertModel(nn.Module):
@@ -545,6 +616,8 @@ class PreTrainedBertModel(nn.Module):
         logger.info("Model config {}".format(config))
         # Instantiate model.
         model = cls(config, *inputs, **kwargs)
+
+        print("model:", model)
 
         if random_initialize:
             return model
@@ -738,7 +811,15 @@ class BertForPreTraining(PreTrainedBertModel):
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, masked_lm_labels=None, next_sentence_label=None):
         sequence_output, pooled_output = self.bert(input_ids, token_type_ids, attention_mask,
                                                    output_all_encoded_layers=False)
+
+        print("sequence_output:", sequence_output.shape)
+        print("pooled_output:", pooled_output.shape)
+
         prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
+
+
+        print("masked_lm_labels:", masked_lm_labels.shape)
+        print("next_sentence_label:", next_sentence_label.shape)
 
         if masked_lm_labels is not None and next_sentence_label is not None:
             loss_fct = CrossEntropyLoss(ignore_index=-1)
@@ -1308,6 +1389,9 @@ class BertVisualModel(PreTrainedBertModel):
                                       text_extended_attention_mask,
                                       output_all_encoded_layers=output_all_encoded_layers)
             sequence_output = encoded_layers[-1]
+
+            # print("sequence_output:", sequence_output.shape)
+            # print("visual_part:", visual_part.shape)
             new_input = torch.cat((sequence_output, visual_part), dim = 1)
             final_sequence_output = self.additional_layer(new_input, extended_attention_mask)
             pooled_output = self.pooler(final_sequence_output)
@@ -1342,15 +1426,20 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
         config.bypass_transformer = bypass_transformer
 
         config.output_attention_weights = output_attention_weights  
+        config.training_head_type = training_head_type
+
         self.output_attention_weights = output_attention_weights  
 
         self.cut_first = cut_first
         self.hard_cap_seq_len = hard_cap_seq_len
         self.bert = BertVisualModel(config)
+        
 
         self.training_head_type = training_head_type
         if self.training_head_type == "pretraining":
             self.cls = BertPreTrainingHeads(config, self.bert.embeddings.word_embeddings.weight)
+            self.vlc = VLCPreTrainingHeads(hidden_dim=768, embed_dim=768)
+
         elif self.training_head_type == "multichoice":
             self.dropout = nn.Dropout(config.hidden_dropout_prob)
             self.classifier = nn.Linear(config.hidden_size, 1)
@@ -1369,6 +1458,24 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             self.cls = BertPreTrainingHeads(config, self.bert.embeddings.word_embeddings.weight)
             self.flickr_attention = FlickrAttention(config)
         self.apply(self.init_bert_weights)
+
+        # print("Training Obejctive")
+        # print("self.bert:", self.bert)
+        # print("self.cls:", self.cls)
+
+
+        ### added by Jingfei
+        # self.embeddings = BertEmbeddingsWithVisualEmbedding(config)
+        # self.config = config
+        # self.selection_layer = SelectionBlock(config)
+        # self.output_layer = OutputBlock(config)
+
+        # # freeze the pretrain bert
+        # if self.training_head_type == "vqa":
+        #     for para in self.bert.parameters():
+        #         para.requires_grad = False
+
+
 
     def forward(
         self, 
@@ -1443,6 +1550,21 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_dict['loss'] = None
             return output_dict
 
+        # print("====================")
+        # print("flat_input_ids:", flat_input_ids.shape)    # [12, 64]
+        # print("flat_input_ids[0]:", flat_input_ids[0])    # [12, 64]
+        # print("flat_token_type_ids:", flat_token_type_ids.shape)  # [12, 64]
+        # print("flat_token_type_ids[0]:", flat_token_type_ids[0])  # [12, 64]
+
+        # print("flat_attention_mask:", flat_attention_mask.shape)  # [12, 164]
+        # print("flat_attention_mask:", flat_attention_mask[0])  # [12, 164]
+
+        # print("flat_visual_embeddings:", flat_visual_embeddings.shape)   # [12, 100, 2048]
+        # # print("flat_position_embeddings_visual:", flat_position_embeddings_visual.shape)  # Nonetype
+        # print("visual_embeddings_type:", visual_embeddings_type.shape)      # [12, 100]
+
+        # print("flat_image_text_alignment:", flat_image_text_alignment.shape) Nonetype
+
         sequence_output, pooled_output = self.bert(
             flat_input_ids, 
             flat_token_type_ids, 
@@ -1455,6 +1577,10 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_all_encoded_layers=output_all_encoded_layers)
 
         output_dict = {}
+        output_dict["config"] = self.config
+        output_dict["sequence_output"] = sequence_output
+        output_dict["pooled_output"] = pooled_output
+
 
         if output_all_encoded_layers:
             output_dict["sequence_output"] = sequence_output
@@ -1462,21 +1588,56 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             output_dict["loss"] = None
             return output_dict
 
+        
         if self.training_head_type == "pretraining":
+
             prediction_scores, seq_relationship_score = self.cls(sequence_output, pooled_output)
-            output_dict["logits"] = prediction_scores
-            output_dict["seq_relationship_score"] = seq_relationship_score
+            output_dict["logits"] = prediction_scores     # (B, 154, 30522)   v.s (B, 54)
+            output_dict["seq_relationship_score"] = seq_relationship_score   # (B, 2)
             output_dict["loss"] = None
 
             if flat_masked_lm_labels is not None and is_random_next is not None:
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
+                # output_dict["sequence_output"] = sequence_output
+                # output_dict["pooled_output"] = pooled_output
+
+                # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
+                # (B*154, 30522)
+                # (B*154)
+
+                # print("is_random_next:", is_random_next.shape)
                 next_sentence_loss = loss_fct(seq_relationship_score.contiguous().view(-1, 2), is_random_next.contiguous().view(-1))
                 output_dict["next_sentence_loss"] = next_sentence_loss
                 output_dict["masked_lm_loss"] = masked_lm_loss
-                output_dict["loss"] = masked_lm_loss + next_sentence_loss
+
+                # print("sequence_output:", sequence_output.shape)    # [12, 140, 768]
+                # print("pooled_output:", pooled_output.shape)     # [12, 768]
+
+                # TODO: contrastive loss between text embedding and image embedding
+                logits_per_image, logits_per_text = self.vlc(flat_input_ids, sequence_output, pooled_output)
+                
+                # print("logits_per_image:", logits_per_image.shape)  # [12, 12]
+                # print("logits_per_text:", logits_per_text.shape)   # [12, 12]
+
+                loss_vlc = CrossEntropyLoss()
+
+                # symmetric loss function
+                batch_size = logits_per_image.size(0)
+                vlc_labels = torch.arange(batch_size).cuda()
+                loss_image = loss_vlc(logits_per_image, vlc_labels)
+                loss_text = loss_vlc(logits_per_text, vlc_labels)
+                vlc_loss = (loss_image + loss_text)/2
+                
+                output_dict["vlc_loss"] = vlc_loss
+
+                output_dict["loss"] = masked_lm_loss + next_sentence_loss  + vlc_loss
             
             if flat_masked_lm_labels is not None and is_random_next is None:
+
+                # print("second")
+                # print("flat_masked_lm_labels:", flat_masked_lm_labels.shape)
+                # print("is_random_next:", is_random_next.shape)
                 loss_fct = CrossEntropyLoss(ignore_index=-1)
                 masked_lm_loss = loss_fct(prediction_scores.contiguous().view(-1, self.config.vocab_size), flat_masked_lm_labels.contiguous().view(-1))
                 #output_dict["next_sentence_loss"] = None
@@ -1500,13 +1661,45 @@ class TrainVisualBERTObjective(PreTrainedBertModel):
             return output_dict
 
         elif self.training_head_type == "vqa":
+
+            ## add by Jingfei
+            # if flat_attention_mask is None:
+            #     flat_attention_mask = torch.ones_like(input_ids)
+            # if flat_token_type_ids is None:
+            #     flat_token_type_ids = torch.zeros_like(input_ids)
+
+            # # We create a 3D attention mask from a 2D tensor mask.
+            # # Sizes are [batch_size, 1, 1, to_seq_length]
+            # # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
+            # # this attention mask is more simple than the triangular masking of causal attention
+            # # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
+            # extended_attention_mask = flat_attention_mask.unsqueeze(1).unsqueeze(2)
+
+            # # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
+            # # masked positions, this operation will create a tensor which is 0.0 for
+            # # positions we want to attend and -10000.0 for masked positions.
+            # # Since we are adding it to the raw scores before the softmax, this is
+            # # effectively the same as removing these entirely.
+            # extended_attention_mask = extended_attention_mask.to(dtype=torch.float32) # fp16 compatibility
+            # extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+
+
+            # embedding_output = self.embeddings(flat_input_ids, flat_token_type_ids, visual_embeddings = flat_visual_embeddings, position_embeddings_visual = flat_position_embeddings_visual, visual_embeddings_type = visual_embeddings_type, image_text_alignment = flat_image_text_alignment, confidence = flat_confidence)
+            # selection_output = self.selection_layer(embedding_output, extended_attention_mask)
+            # output_dict['selection_output'] = selection_output
+
+            # concatenate_input = selection_output + sequence_output
+            # final_output = self.output_layer(concatenate_input, extended_attention_mask)
+
+
             index_to_gather = flat_input_mask.sum(1) - 2
 
             pooled_output = torch.gather(sequence_output, 1, index_to_gather.unsqueeze(-1).unsqueeze(-1).expand(index_to_gather.size(0), 1, sequence_output.size(-1)))
 
             flat_input_ids = torch.gather(flat_input_ids, 1, index_to_gather.unsqueeze(-1).expand(index_to_gather.size(0), 1))
-
+            output_dict["mod_pool_out1"] = pooled_output
             pooled_output = self.dropout(pooled_output)
+            output_dict["mod_pool_out2"] = pooled_output
             logits = self.classifier(pooled_output)
             reshaped_logits = logits.contiguous().view(-1, 3129)
 
@@ -1714,3 +1907,89 @@ def batched_index_select(t, dim, inds):
     dummy = inds.unsqueeze(2).expand(inds.size(0), inds.size(1), t.size(2))
     out = t.gather(dim, dummy) # b x e x f
     return out
+
+
+#### added by Jingfei
+# class SelectionBlock(nn.Module):
+#     def __init__(self, config):
+#         super(SelectionBlock, self).__init__()
+#         self.selection_layer = BertLayer(config)
+
+#     def forward(self, hidden_states, attention_mask):
+#         return self.selection_layer(hidden_states, attention_mask)
+
+# class OutputBlock(nn.Module):
+#     def __init__(self, config):
+#         super(OutputBlock, self).__init__()
+#         self.output_layer = BertLayer(config)
+
+#     def forward(self, hidden_states, attention_mask):
+#         return self.output_layer(hidden_states, attention_mask)
+
+class Adapter(nn.Module):
+    def __init__(self, dim_in, dim_hid=256):
+        super(Adapter, self).__init__()
+        self.lin_down = nn.Linear(dim_in, dim_hid)
+        self.lin_up = nn.Linear(dim_hid, dim_in)
+    def forward(self, x):
+        input = x
+        x = self.lin_down(x)
+        x = gelu(x)
+        x = self.lin_up(x)
+        x = x + input
+        return x
+
+#### added by Jingfei
+# class SelectionBlock(nn.Module):
+#     def __init__(self, config):
+#         super(SelectionBlock, self).__init__()
+#         layer = BertLayer(config)
+#         self.selection_layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(6)])
+
+#     def forward(self, hidden_states, attention_mask):
+#         for layer_module in self.selection_layer:
+#             hidden_states = layer_module(hidden_states, attention_mask)
+#         return hidden_states
+
+# class OutputBlock(nn.Module):
+#     def __init__(self, config):
+#         super(OutputBlock, self).__init__()
+#         layer = BertLayer(config)
+#         self.output_layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(3)])
+
+
+#     def forward(self, hidden_states, attention_mask):
+#         for layer_module in self.output_layer:
+#             hidden_states = layer_module(hidden_states, attention_mask)
+
+#         return hidden_states
+
+# class BertLayerAdapter(nn.Module):
+#     def __init__(self, bert_layer):
+#         super(BertLayerAdapter, self).__init__()
+#         self.attention = bert_layer.attention
+#         self.intermediate = bert_layer.intermediate
+#         # TODO: define dim_intermediate
+#         self.adapter1 = Adapter(dim_intermediate)
+#         self.output = bert_layer.output
+#         # TODO: define dim_output
+#         self.adapter2 = Adapter(dim_output)
+#         self.output_attention_weights = bert_layer.output_attention_weights
+#         self.attention.train(False)
+#         self.intermediate.train(False)
+#         self.output.train(False)
+#     def forward(self, hidden_states, attention_mask):
+#         if self.output_attention_weights:
+#             attention_output, attention_weights = self.attention(hidden_states, attention_mask)
+#             intermediate_output = self.intermediate(attention_output)
+#             intermediate_output = self.adapter1(intermediate_output)
+#             layer_output = self.output(intermediate_output, attention_output)
+#             layer_output = self.adapter2(layer_output)
+#             return layer_output, attention_weights
+#         else:
+#             attention_output = self.attention(hidden_states, attention_mask)
+#             intermediate_output = self.intermediate(attention_output)
+#             intermediate_output = self.adapter1(intermediate_output)
+#             layer_output = self.output(intermediate_output, attention_output)
+#             layer_output = self.adapter2(layer_output)
+#             return layer_output
