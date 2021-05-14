@@ -28,9 +28,6 @@ python train.py -folder ../experiments/vqa/coco_pre_train_vlc -config ../configs
 # fine-tuning
 python train.py -folder ../experiments/vqa/vqa_finetune_vlc -config ../configs/vqa/fine-tune.json
 
-# testing
-python train.py -folder ../experiments/vqa/vqa_test_vlc -config ../configs/vqa/test.json
-
 ```
 
 ### VCR
