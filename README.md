@@ -43,7 +43,6 @@ python train.py -folder ../experiments/vcr/vcr_finetune_qar_vlc -config ../confi
 
 ```
 
-
 ## References
 
 [1]Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez,Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. InAdvances in Neural Informa-tion Processing Systems, page 5998–6008, 2017.
