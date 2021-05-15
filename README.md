@@ -1,4 +1,4 @@
-# VLC-BERT for Pre-training Visual and LinguisticRepresentations Contrastively
+# VLC-BERT for Pre-training Visual and Linguistic Representations Contrastively
 
 ## Authors 
 Shentong Mo,  Jingfei Xia,  Ihor Markevych
