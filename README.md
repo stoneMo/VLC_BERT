@@ -1,4 +1,4 @@
-# VLC-BERT (11747-project)
+# VLC-BERT for Pre-training Visual and LinguisticRepresentations Contrastively
 
 ## Authors 
 Shentong Mo,  Jingfei Xia,  Ihor Markevych
