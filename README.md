@@ -6,8 +6,6 @@ Shentong Mo,  Jingfei Xia,  Ihor Markevych
 ## Abstract
 Visual and linguistic pre-training aims to learn vision and language representations together, which can be transferred to visual-linguistic downstream tasks. In this work, we present a novel network based on BERT for pre-training visual and linguistic representations contrastively, namely **VLC-BERT**, which applies a contrastive learning framework during the pre-training stage. To further ease the need for large computation resources, we propose two adapter variants in our VLC-BERT. Then we evaluate those pre-trained models on two main downstream tasks, including Visual Question Answering (VQA) and Visual Commonsense Reasoning (VCR). Compared to previous baselines, our VLC-BERT pre-trained models achieve comparable or better results when transferred to VQA and VCR tasks. Extensive experiments also show the efficiency of our adapters in saving computation resources.
 
-
-
 ## Baselines
 
 We firstly reproduce several existing models and take them as a baselines that we aim to improve with VLC-BERT. Please see the details about those baselines in each branch on this repo.
